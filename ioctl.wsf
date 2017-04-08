@@ -1,0 +1,94 @@
+<job>
+ <script language="JScript" src="ioctl_db.js"></script>
+ <script language="JScript" src="ioctl.js"></script>
+ <script language="JScript">
+   function format_hex(value)
+   {
+     if (value >= 0)
+       return value.toString(16);
+     return ((value >> 16) & 0xFFFF).toString(16) + (value & 0xFFFF).toString(16);
+   }
+
+   var results;
+
+   // Parse the arguments
+   var search_for;
+   var force_decimal = 0;
+   var force_device = 0;
+
+   try
+   {
+     for (var i = 0; i != WScript.Arguments.Length; ++i)
+     {
+       if (WScript.Arguments(i) == '--decimal')
+         force_decimal = 1;
+       else if (WScript.Arguments(i) == '--device')
+         force_device = 1;
+       else if (!search_for)
+         search_for = WScript.Arguments(i);
+       else
+         throw Error(0, 'Multiple search strings');
+     }
+
+     if (!search_for)
+       throw Error(0, 'No search string');
+
+     if (force_device)
+       results = device_decode(search_for, force_decimal);
+     else
+       results = ioctl_decode(search_for, force_decimal);
+   }
+   catch (e)
+   {
+     var errstr = 'Invalid arguments "';
+     for (var i = 0; i < WScript.Arguments.Length; ++i)
+     {
+       errstr += WScript.Arguments(i);
+       if (i != WScript.Arguments.Length - 1)
+         errstr += ' ';
+     }
+     WScript.Echo(errstr + '": ' + e.message);
+     WScript.Echo('Usage: ioctl [--device] [--decimal] code-or-regex');
+     WScript.Echo('(prefix code with 0x to force hex lookup)');
+     WScript.Quit();
+   }
+
+   if (results.length == 0)
+   {
+     WScript.Echo('No matching IOCTLs found');
+     WScript.Quit();
+   }
+
+   WScript.Echo();
+   WScript.Echo('Found ' + results.length + ' matching IOCTLs:');
+   WScript.Echo();
+
+   for (var i = 0; i != results.length; ++i)
+   {
+     var out = 'IOCTL: 0x' + format_hex(results[i].ioctl_value);
+     if (results[i].ioctl)
+       out += ' (' + results[i].ioctl.split(' ').join(' or ') + ')';
+     else
+       out += ' <decoded>';
+     WScript.Echo(out);
+
+     out = 'Device: 0x' + results[i].device_value.toString(16);
+     if (results[i].device)
+       out += ' (' + results[i].device.split(' ').join(' or ') + ')';
+     WScript.Echo(out);
+
+     WScript.Echo('Function: 0x' + results[i].function_value.toString(16));
+     WScript.Echo('Access: 0x' + results[i].access_value.toString(16) + ' (' + results[i].access + ')');
+     WScript.Echo('Method: 0x' + results[i].method_value.toString(16) + ' (' + results[i].method + ')');
+     if (results[i].inexact_ioctl)
+       WScript.Echo('Note: Inexact match found for 0x' + format_hex(results[i].inexact_ioctl_value) +
+           ' (' + results[i].inexact_ioctl + ')');
+     if (results[i].device_common)
+       WScript.Echo('Note: Device type has the common bit set');
+     if (results[i].function_custom)
+       WScript.Echo('Note: Function code has the custom bit set');
+     if (i != results.length - 1)
+       WScript.Echo();
+   }
+ </script>
+</job>

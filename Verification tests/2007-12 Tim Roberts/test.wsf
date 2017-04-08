@@ -1,0 +1,50 @@
+<job>
+ <script language="JScript" src="..\..\ioctl_db.js"></script>
+ <script language="JScript" src="..\..\ioctl.js"></script>
+ <script language="JScript">
+   var fso = new ActiveXObject("Scripting.FileSystemObject");
+   var file = fso.GetFile("data.txt");
+   var stream = file.OpenAsTextStream(1, -2);
+
+   function format_hex(value)
+   {
+     if (value >= 0)
+       return value.toString(16);
+     return ((value >> 16) & 0xFFFF).toString(16) + (value & 0xFFFF).toString(16);
+   }
+
+   while (!stream.AtEndOfStream)
+   {
+     var str = stream.ReadLine();
+     var values = str.split(" = ");
+     if (values.length != 2)
+       break;
+
+     var results = ioctl_decode('0x' + values[0]);
+     var ok = 0;
+     var has_results = 0;
+
+     if (results.length != 0)
+     {
+       for (var i = 0; i != results.length; ++i)
+       {
+         if (results[i].ioctl != null)
+         {
+           has_results = 1;
+           var tmp = results[i].ioctl.split(' ');
+           for (var j = 0; j != tmp.length; ++j)
+             if (tmp[j] == values[1])
+               ok = 1;
+         }
+       }
+     }
+     if (has_results == 0)
+     {
+       WScript.Echo('Not found: ' + values[0] + ' (' + values[1] + ')');
+       continue;
+     }
+     if (ok == 0)
+       WScript.Echo('Improper value for: ' + values[0] + ' (' + values[1] + ')');
+   }
+ </script>
+</job>

@@ -1,0 +1,26 @@
+<job>
+ <script language="JScript" src="ioctl_db.js"></script>
+ <script language="JScript">
+    var num_devices = 0;
+    var num_ioctls = 0;
+    var total_devices = 0;
+    var total_ioctls = 0;
+    for (device in ioctl_db)
+    {
+      ++num_devices;
+      total_devices += ioctl_db[device].n.split(' ').length;
+      if ('i' in ioctl_db[device])
+      {
+        for (ioctl in ioctl_db[device].i)
+        {
+          ++num_ioctls;
+          total_ioctls += ioctl_db[device].i[ioctl].split(' ').length;
+        }
+      }
+    }
+    WScript.Echo('Number of unique device types recognized: ' + num_devices +
+        '\n' + 'Total number of device ids: ' + total_devices +
+        '\n' + 'Number of unique ioctls recognized: ' + num_ioctls +
+        '\n' + 'Total number of ioctl ids: ' + total_ioctls);
+ </script>
+</job>

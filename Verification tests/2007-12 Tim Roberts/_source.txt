@@ -1,0 +1,1 @@
+On 2007-12-12, Tim Roberts posted to the OSR ntdev list a link to a list of ioctl's, generated using the C preprocessor. This list was saved in this directory as "data.txt".

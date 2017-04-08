@@ -1,0 +1,17 @@
+<job>
+ <script language="JScript" src="dump.js"></script>
+ <script language="JScript" src="ioctl_db0.js"></script>
+ <script language="JScript">
+    delete ioctl_db.end;
+    for (device in ioctl_db)
+    {
+      delete ioctl_db[device].i.end;
+      var count = 0;
+      for (i in ioctl_db[device].i)
+        ++count;
+      if (count == 0)
+        delete ioctl_db[device].i;
+    }
+    WScript.Echo('var ioctl_db=' + dump_source(ioctl_db));
+ </script>
+</job>
